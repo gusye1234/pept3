@@ -1,5 +1,12 @@
 name: Python test
 
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 
 jobs:

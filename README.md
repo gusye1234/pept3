@@ -1,5 +1,8 @@
 # Stu
-**S**emi-supervised Fine-**tu**ning for Spectrum Prediction.
+![test workflow](https://github.com/gusye1234/StuMS/actions/workflows/main.yml/badge.svg)
+
+
+**S**emi-supervised Fine-**tu**ning for Mass Spectrum Prediction.
 
 ## Get Started in CLI
 Run

@@ -11,7 +11,7 @@ on:
 
 jobs:
   deploy-wheels:
-    name: Deploy wheels on ${{ matrix.os }} for ${{ matrix.python-version }}
+    name: Tests on ${{ matrix.os }} for ${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -36,6 +36,7 @@ jobs:
           python-version: 3.9
       - name: Install dependencies
         run: |
-          echo $(pwd)
+          echo $(ls -alt)
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          pip install pytest

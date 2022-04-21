@@ -1,5 +1,5 @@
 import pytest
-from stu import models
+from stums import models
 
 
 def test_deps():

@@ -1,7 +1,7 @@
 import pytest
 import torch
-from stu import models
-from stu import utils
+from stums import models
+from stums import utils
 
 MOCK_INPUT = {
     "sequence_integer": torch.tensor([[

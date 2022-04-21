@@ -2,10 +2,10 @@ import torch
 import logging
 import sys
 sys.path.append("../")
-from stu.models import PrositFrag, pDeep2_nomod
-from stu.finetune import semisupervised_finetune_twofold
-from stu.features import generate_prosit_feature_set
-from stu import utils
+from stums.models import PrositFrag, pDeep2_nomod
+from stums.finetune import semisupervised_finetune_twofold
+from stums.features import generate_prosit_feature_set
+from stums import utils
 
 utils.LOGGING_LEVEL = logging.INFO
 

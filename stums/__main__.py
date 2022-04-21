@@ -10,14 +10,14 @@ from .features import generate_prosit_feature_set
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description='Stu: Semi-supervised Fine-tuning for Spectrum Prediction')
+        description='StuMS: Semi-supervised Fine-tuning for Spectrum Prediction')
     parser.add_argument(
         "input_tab", metavar="Input Feature Tab", type=str, nargs=1,
-        help="The input file for Stu")
+        help="The input file for StuMS")
     parser.add_argument('--iteration', type=int, default=10,
-                        help='maximum iteration times for Stu, lower this number could reduce running time but also may reduce the performance')
+                        help='maximum iteration times for StuMS, lower this number could reduce running time but also may reduce the performance')
     parser.add_argument('--gpu_index', type=int, default=0,
-                        help='GPU id for Stu, if CUDA is available')
+                        help='GPU id for StuMS, if CUDA is available')
     parser.add_argument('--spmodel', type=str, default='prosit', choices=list(Model_Factories.keys()),
                         help='Spectrum Prediction Models, all the models are re-implemented in PyTorch.')
     parser.add_argument('--similarity', type=str, default='SA', choices=list(Similarity_Factories.keys()),

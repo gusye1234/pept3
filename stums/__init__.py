@@ -4,6 +4,7 @@ from . import features
 from . import bio
 from . import similarity
 from . import utils
+from .main import main
 
 __version__ = "0.0.1"
 __author__ = "Jianbai Ye"

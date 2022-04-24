@@ -1,3 +1,4 @@
+from importlib_metadata import entry_points
 import setuptools
 import stums
 
@@ -21,5 +22,10 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     python_requires='>=3.6',
-    install_requires=deps
+    install_requires=deps,
+    entry_points={
+        "console_scripts": [
+            "stums = stums:main",
+        ]
+    }
 )

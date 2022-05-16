@@ -1,11 +1,13 @@
 """
 functions for handling input msms data
 """
-import numpy as np
 import re
+
+import numpy as np
+
 from .utils import get_logger
 
-logger = get_logger("bio")
+logger = get_logger('bio')
 
 TOLERANCE_FTMS = 25
 TOLERANCE_ITMS = 0.35
@@ -14,31 +16,30 @@ TOLERANCE_TRIPLETOF = 0.5
 iRT_rescaling_mean = 56.35363441
 iRT_rescaling_var = 1883.0160689
 
-TOLERANCE = {"FTMS": (25, "ppm"), "ITMS": (
-    0.35, "da"), "TripleTOF": (50, "ppm")}
+TOLERANCE = {'FTMS': (25, 'ppm'), 'ITMS': (0.35, 'da'), 'TripleTOF': (50, 'ppm')}
 
 ALPHABET = {
-    "A": 1,
-    "C": 2,
-    "D": 3,
-    "E": 4,
-    "F": 5,
-    "G": 6,
-    "H": 7,
-    "I": 8,
-    "K": 9,
-    "L": 10,
-    "M": 11,
-    "N": 12,
-    "P": 13,
-    "Q": 14,
-    "R": 15,
-    "S": 16,
-    "T": 17,
-    "V": 18,
-    "W": 19,
-    "Y": 20,
-    "M(ox)": 21,
+    'A': 1,
+    'C': 2,
+    'D': 3,
+    'E': 4,
+    'F': 5,
+    'G': 6,
+    'H': 7,
+    'I': 8,
+    'K': 9,
+    'L': 10,
+    'M': 11,
+    'N': 12,
+    'P': 13,
+    'Q': 14,
+    'R': 15,
+    'S': 16,
+    'T': 17,
+    'V': 18,
+    'W': 19,
+    'Y': 20,
+    'M(ox)': 21,
 }
 AMINOS = list(ALPHABET)
 ALPHABET_S = {integer: char for char, integer in ALPHABET.items()}
@@ -48,41 +49,41 @@ DEFAULT_MAX_CHARGE = len(CHARGES)
 MAX_FRAG_CHARGE = 3
 MAX_SEQUENCE = 30
 MAX_ION = MAX_SEQUENCE - 1
-ION_TYPES = ["y", "b"]
-NLOSSES = ["", "H2O", "NH3"]
+ION_TYPES = ['y', 'b']
+NLOSSES = ['', 'H2O', 'NH3']
 
-FORWARD = {"a", "b", "c"}
-BACKWARD = {"x", "y", "z"}
+FORWARD = {'a', 'b', 'c'}
+BACKWARD = {'x', 'y', 'z'}
 
 # Amino acids
 MODIFICATION = {
-    "CAM": 57.0214637236,  # Carbamidomethylation (CAM)
-    "OX": 15.99491,  # Oxidation
+    'CAM': 57.0214637236,  # Carbamidomethylation (CAM)
+    'OX': 15.99491,  # Oxidation
 }
 AMINO_ACID = {
-    "G": 57.021464,
-    "R": 156.101111,
-    "V": 99.068414,
-    "P": 97.052764,
-    "S": 87.032028,
-    "U": 150.95363,
-    "L": 113.084064,
-    "M": 131.040485,
-    "Q": 128.058578,
-    "N": 114.042927,
-    "Y": 163.063329,
-    "E": 129.042593,
-    "C": 103.009185 + MODIFICATION["CAM"],
-    "F": 147.068414,
-    "I": 113.084064,
-    "A": 71.037114,
-    "T": 101.047679,
-    "W": 186.079313,
-    "H": 137.058912,
-    "D": 115.026943,
-    "K": 128.094963,
+    'G': 57.021464,
+    'R': 156.101111,
+    'V': 99.068414,
+    'P': 97.052764,
+    'S': 87.032028,
+    'U': 150.95363,
+    'L': 113.084064,
+    'M': 131.040485,
+    'Q': 128.058578,
+    'N': 114.042927,
+    'Y': 163.063329,
+    'E': 129.042593,
+    'C': 103.009185 + MODIFICATION['CAM'],
+    'F': 147.068414,
+    'I': 113.084064,
+    'A': 71.037114,
+    'T': 101.047679,
+    'W': 186.079313,
+    'H': 137.058912,
+    'D': 115.026943,
+    'K': 128.094963,
 }
-AMINO_ACID["M(ox)"] = AMINO_ACID["M"] + MODIFICATION["OX"]
+AMINO_ACID['M(ox)'] = AMINO_ACID['M'] + MODIFICATION['OX']
 
 # Atomic elements
 PROTON = 1.007276467
@@ -101,36 +102,35 @@ NH2 = N + H * 2
 H2O = H * 2 + O
 NH3 = N + H * 3
 
-NEUTRAL_LOSS = {"NH3": NH3, "H2O": H2O}
+NEUTRAL_LOSS = {'NH3': NH3, 'H2O': H2O}
 
 ION_OFFSET = {
-    "a": N_TERMINUS - CHO,
-    "b": N_TERMINUS - H,
-    "c": N_TERMINUS + NH2,
-    "x": C_TERMINUS + CO - H,
-    "y": C_TERMINUS + H,
-    "z": C_TERMINUS - NH2,
+    'a': N_TERMINUS - CHO,
+    'b': N_TERMINUS - H,
+    'c': N_TERMINUS + NH2,
+    'x': C_TERMINUS + CO - H,
+    'y': C_TERMINUS + H,
+    'z': C_TERMINUS - NH2,
 }
 
 
 def reverse_annotation(matches, intensities, charges, length):
     import re
+
     if isinstance(matches, float):
         result = np.zeros((29, 2, 3))
         result[:, :, charges:] = -1
-        result[length - 1:] = -1
+        result[length - 1 :] = -1
         return result
-    matches = matches.split(";")
+    matches = matches.split(';')
     intensities = [float(i) for i in intensities.split(';')]
 
-    tmp = re.compile(r"(y|x|a|b)(\d+)$")
-    tmp_nl = re.compile(r"(y|x|a|b)(\d+)-(NH3|H2O)$")
-    tmp_higher = re.compile(r"(y|x|a|b)(\d+)\((\d+)\+\)$")
-    tmp_higher_nl = re.compile(r"(y|x|a|b)(\d+)-(NH3|H2O)\((\d+)\+\)$")
+    tmp = re.compile(r'(y|x|a|b)(\d+)$')
+    tmp_nl = re.compile(r'(y|x|a|b)(\d+)-(NH3|H2O)$')
+    tmp_higher = re.compile(r'(y|x|a|b)(\d+)\((\d+)\+\)$')
+    tmp_higher_nl = re.compile(r'(y|x|a|b)(\d+)-(NH3|H2O)\((\d+)\+\)$')
     result = np.zeros((29, 2, 3))
-    ion_dict = {
-        'y': 0, 'b': 1
-    }
+    ion_dict = {'y': 0, 'b': 1}
     for m, inten in zip(matches, intensities):
         if re.match(tmp_nl, m) or re.match(tmp_higher_nl, m):
             # No Natural ions considered
@@ -151,20 +151,20 @@ def reverse_annotation(matches, intensities, charges, length):
             continue
         result[frag_i - 1, ion_dict[ion], charge - 1] = float(inten)
     result[:, :, charges:] = -1
-    result[length - 1:] = -1
+    result[length - 1 :] = -1
     return result
 
 
 def peptide_parser(p):
-    p = p.replace("_", "")
-    if p[0] == "(":
+    p = p.replace('_', '')
+    if p[0] == '(':
         logger.error(p)
         raise ValueError("sequence starts with '('")
     n = len(p)
     i = 0
     while i < n:
-        if i < n - 3 and p[i + 1] == "(":
-            j = p[i + 2:].index(")")
+        if i < n - 3 and p[i + 1] == '(':
+            j = p[i + 2 :].index(')')
             offset = i + j + 3
             yield p[i:offset]
             i = offset
@@ -174,7 +174,7 @@ def peptide_parser(p):
 
 
 def peptide_to_inter(seq, max_length=30):
-    re = np.zeros((max_length, ), dtype='int')
+    re = np.zeros((max_length,), dtype='int')
     for i, s in enumerate(peptide_parser(seq)):
         re[i] = ALPHABET[s]
     return re.reshape(1, -1)
@@ -182,6 +182,6 @@ def peptide_to_inter(seq, max_length=30):
 
 def one_hot(flag, max_cate=6):
     flag = min(flag, max_cate)
-    re = np.zeros((max_cate, ))
+    re = np.zeros((max_cate,))
     re[flag] = 1
     return re.reshape(1, -1)

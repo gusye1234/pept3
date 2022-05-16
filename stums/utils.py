@@ -1,33 +1,31 @@
 import logging
-import pandas as pd
 from copy import deepcopy
 
-logging.basicConfig(
-    format="%(asctime)s-[%(name)8s] > %(message)s",
-    datefmt='%H:%M:%S')
+import pandas as pd
+
+logging.basicConfig(format='%(asctime)s-[%(name)8s] > %(message)s', datefmt='%H:%M:%S')
 
 LOGGING_LEVEL = logging.WARNING
 
 
-def get_logger(name="default"):
+def get_logger(name='default'):
     logger = logging.getLogger(name)
     logger.setLevel(LOGGING_LEVEL)
     return logger
 
 
-def reshape_dims(array, MAX_SEQUENCE=30, ION_TYPES="yb", MAX_FRAG_CHARGE=3):
+def reshape_dims(array, MAX_SEQUENCE=30, ION_TYPES='yb', MAX_FRAG_CHARGE=3):
     n, dims = array.shape
     assert dims == 174
     return array.reshape(
-        *[array.shape[0], MAX_SEQUENCE - 1,
-            len(ION_TYPES), MAX_FRAG_CHARGE]
+        *[array.shape[0], MAX_SEQUENCE - 1, len(ION_TYPES), MAX_FRAG_CHARGE]
     )
 
 
 def mask_outofrange(array, lengths, mask=-1.0):
     # dim
     for i in range(array.shape[0]):
-        array[i, lengths[i] - 1:, :, :] = mask
+        array[i, lengths[i] - 1 :, :, :] = mask
     return array
 
 
@@ -35,19 +33,21 @@ def mask_outofcharge(array, charges, mask=-1.0):
     # dim
     for i in range(array.shape[0]):
         if charges[i] < 3:
-            array[i, :, :, charges[i]:] = mask
+            array[i, :, :, charges[i] :] = mask
     return array
 
 
 def create_mask(peptides, pad_id=0):
-    return (peptides == pad_id)
+    return peptides == pad_id
 
 
 def set_seed(seed):
-    import numpy as np
-    import torch
     import random
+
+    import numpy as np
     import pandas as pd
+    import torch
+
     np.random.seed(seed)
     random.seed(seed)
     if torch.cuda.is_available():
@@ -63,7 +63,9 @@ class timer:
             do something
         timer.get()
     """
+
     from time import time
+
     NAMED_TAPE = {}
 
     @staticmethod
@@ -89,9 +91,9 @@ class timer:
 
     def __init__(self, name, **kwargs):
         if not timer.NAMED_TAPE.get(name):
-            timer.NAMED_TAPE[name] = 0.
+            timer.NAMED_TAPE[name] = 0.0
         self.named = name
-        if kwargs.get("group"):
+        if kwargs.get('group'):
             # TODO: add group function
             pass
 

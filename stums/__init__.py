@@ -1,11 +1,6 @@
-from . import models
-from . import finetune
-from . import features
-from . import bio
-from . import similarity
-from . import utils
+from . import bio, features, finetune, models, similarity, utils
 from .main import main
 
-__version__ = "0.0.1"
-__author__ = "Jianbai Ye"
-__url__ = "https://github.com/gusye1234/StuMS"
+__version__ = '0.0.1'
+__author__ = 'Jianbai Ye'
+__url__ = 'https://github.com/gusye1234/StuMS'

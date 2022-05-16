@@ -1,7 +1,6 @@
 import torch
-from torch import nn
-from torch import Tensor
 import torch.nn.functional as F
+from torch import Tensor, nn
 
 
 class AttentalSum(nn.Module):
@@ -32,45 +31,58 @@ class pDeep2_nomod(nn.Module):
         self.instrument_size = 8
         self.input_size = self.peptide_dim * 4 + 2 + 1 + 3
         self.ions_dim = kwargs.pop('ions_dim', 6)
-        self.instrument_ce_scope = "instrument_nce"
+        self.instrument_ce_scope = 'instrument_nce'
         self.rnn_dropout = 0.2
         self.output_dropout = 0.2
         self.init_layers()
 
     def init_layers(self):
         self.lstm_layer1 = nn.LSTM(
-            self.input_size, self.layer_size, batch_first=True, bidirectional=True)
+            self.input_size, self.layer_size, batch_first=True, bidirectional=True
+        )
         self.lstm_layer2 = nn.LSTM(
-            self.layer_size * 2 + 1 + 3, self.layer_size, batch_first=True, bidirectional=True)
+            self.layer_size * 2 + 1 + 3,
+            self.layer_size,
+            batch_first=True,
+            bidirectional=True,
+        )
 
         self.lstm_output_layer = nn.LSTM(
-            self.layer_size * 2 + 1 + 3, self.ions_dim, bidirectional=True, batch_first=True
+            self.layer_size * 2 + 1 + 3,
+            self.ions_dim,
+            bidirectional=True,
+            batch_first=True,
         )
-        self.linear_inst_proj = nn.Linear(
-            self.instrument_size + 1, 3, bias=False)
+        self.linear_inst_proj = nn.Linear(self.instrument_size + 1, 3, bias=False)
         self.dropout = nn.Dropout(p=self.output_dropout)
 
     def comment(self):
-        return "pDeep2"
+        return 'pDeep2'
 
     def pdeep2_long_feature(self, data):
-        peptides = F.one_hot(data['sequence_integer'],
-                             num_classes=self.peptide_dim)
+        peptides = F.one_hot(data['sequence_integer'], num_classes=self.peptide_dim)
         peptides_mask = data['peptide_mask']
         peptides_length = torch.sum(peptides_mask, dim=1)
         pep_dim = peptides.shape[2]
         assert pep_dim == self.peptide_dim
         long_feature = peptides.new_zeros(
-            (peptides.shape[0], peptides.shape[1] - 1, pep_dim * 4 + 2))
+            (peptides.shape[0], peptides.shape[1] - 1, pep_dim * 4 + 2)
+        )
         long_feature[:, :, :pep_dim] = peptides[:, :-1, :]
-        long_feature[:, :, pep_dim:2 * pep_dim] = peptides[:, 1:, :]
+        long_feature[:, :, pep_dim : 2 * pep_dim] = peptides[:, 1:, :]
         for i in range(peptides.shape[1] - 1):
-            long_feature[:, i, 2 * pep_dim:3 * pep_dim] = torch.sum(
-                peptides[:, :i, :], dim=1) if i != 0 else peptides.new_zeros((peptides.shape[0], pep_dim))
-            long_feature[:, i, 3 * pep_dim:4 * pep_dim] = torch.sum(peptides[:, (i + 2):, :], dim=1) if i == (
-                peptides.shape[1] - 2) else peptides.new_zeros((peptides.shape[0], pep_dim))
+            long_feature[:, i, 2 * pep_dim : 3 * pep_dim] = (
+                torch.sum(peptides[:, :i, :], dim=1)
+                if i != 0
+                else peptides.new_zeros((peptides.shape[0], pep_dim))
+            )
+            long_feature[:, i, 3 * pep_dim : 4 * pep_dim] = (
+                torch.sum(peptides[:, (i + 2) :, :], dim=1)
+                if i == (peptides.shape[1] - 2)
+                else peptides.new_zeros((peptides.shape[0], pep_dim))
+            )
             long_feature[:, i, 4 * pep_dim] = 1 if (i == 0) else 0
-            long_feature[:, i, 4 * pep_dim + 1] = ((peptides_length - 2) == i)
+            long_feature[:, i, 4 * pep_dim + 1] = (peptides_length - 2) == i
         return long_feature
 
     def add_leng_dim(self, x, length):
@@ -90,7 +102,7 @@ class pDeep2_nomod(nn.Module):
         peptides_length = peptides.shape[1]
         inst_feat = charge.new_zeros((B, self.instrument_size))
         # ['QE', 'Velos', 'Elite', 'Fusion', 'Lumos', 'unknown']
-        inst_feat[: 5] = 1
+        inst_feat[:5] = 1
         charge = self.add_leng_dim(charge, peptides_length)
         nce = self.add_leng_dim(nce, peptides_length)
         inst_feat = self.add_leng_dim(inst_feat, peptides_length)
@@ -105,7 +117,7 @@ class pDeep2_nomod(nn.Module):
         x = self.dropout(x)
         x = torch.cat([x, charge, proj_inst], dim=2)
         output, _ = self.lstm_output_layer(x)
-        output = (output[:, :, :self.ions_dim] + output[:, :, self.ions_dim:])
+        output = output[:, :, : self.ions_dim] + output[:, :, self.ions_dim :]
 
         return output.reshape(B, -1)
 
@@ -120,25 +132,28 @@ class PrositFrag(nn.Module):
         self.max_sequence = kwargs.pop('max_lenght', 30)
 
         self.embedding = nn.Embedding(self.peptide_dim, self.peptide_embed_dim)
-        self.bi = nn.GRU(input_size=self.peptide_embed_dim,
-                         hidden_size=self.hidden_size,
-                         bidirectional=True)
+        self.bi = nn.GRU(
+            input_size=self.peptide_embed_dim,
+            hidden_size=self.hidden_size,
+            bidirectional=True,
+        )
         self.drop3 = nn.Dropout(p=0.3)
-        self.gru = nn.GRU(input_size=self.hidden_size * 2,
-                          hidden_size=self.hidden_size * 2)
+        self.gru = nn.GRU(
+            input_size=self.hidden_size * 2, hidden_size=self.hidden_size * 2
+        )
         self.agg = AttentalSum(self.hidden_size * 2)
         self.leaky = nn.LeakyReLU()
 
-        self.side_encoder = nn.Linear(
-            self.percursor_dim + 1, self.hidden_size * 2)
+        self.side_encoder = nn.Linear(self.percursor_dim + 1, self.hidden_size * 2)
 
-        self.gru_decoder = nn.GRU(input_size=self.hidden_size * 2,
-                                  hidden_size=self.hidden_size * 2)
+        self.gru_decoder = nn.GRU(
+            input_size=self.hidden_size * 2, hidden_size=self.hidden_size * 2
+        )
         self.in_frag = nn.Linear(self.max_sequence - 1, self.max_sequence - 1)
         self.final_decoder = nn.Linear(self.hidden_size * 2, 6)
 
     def comment(self):
-        return "PrositFrag"
+        return 'PrositFrag'
 
     def forward(self, x, **kwargs):
         self.bi.flatten_parameters()
@@ -174,18 +189,14 @@ class PrositFrag(nn.Module):
         return x
 
 
-Model_Factories = {
-    'prosit': PrositFrag,
-    'pdeep': pDeep2_nomod
-}
+Model_Factories = {'prosit': PrositFrag, 'pdeep': pDeep2_nomod}
 
 _Model_Weights_Factories = {
-    'prosit': "./assets/best_frag_l1_PrositFrag-1024.pth",
-    'pdeep': "./assets/best_frag_l1_pDeep2-1024.pth"
+    'prosit': './assets/best_frag_l1_PrositFrag-1024.pth',
+    'pdeep': './assets/best_frag_l1_pDeep2-1024.pth',
 }
 
-_Model_Weights_Url_Factories = {
-}
+_Model_Weights_Url_Factories = {}
 
 
 def Model_Weights_Factories(model_name):

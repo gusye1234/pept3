@@ -1,43 +1,47 @@
 import h5py
-import torch
-import pandas as pd
 import numpy as np
+import pandas as pd
+import torch
 from torch.utils.data import Dataset
-from .bio import reverse_annotation, peptide_to_inter, one_hot
+
+from .bio import one_hot, peptide_to_inter, reverse_annotation
 from .utils import get_logger
 
 
 def Debug(msg):
-    logger = get_logger("dataset")
+    logger = get_logger('dataset')
     logger.debug(msg)
 
 
 def Info(msg):
-    logger = get_logger("dataset")
+    logger = get_logger('dataset')
     logger.info(msg)
 
 
 def Error(msg):
-    logger = get_logger("dataset")
+    logger = get_logger('dataset')
     logger.error(msg)
 
 
 class SemiDataset:
-
-    def __init__(self, table_input, score_init="andromeda", pi=0.9):
+    def __init__(self, table_input, score_init='andromeda', pi=0.9):
         self._file_input = table_input
         self._pi = pi
-        if table_input.endswith("tab"):
+        if table_input.endswith('tab'):
             self._hdf5 = False
-            self._data = pd.read_csv(table_input, sep='\t').sample(
-                frac=1, random_state=2022).reset_index(drop=True)
+            self._data = (
+                pd.read_csv(table_input, sep='\t')
+                .sample(frac=1, random_state=2022)
+                .reset_index(drop=True)
+            )
             self._data['sequence_length'] = self._data['Peptide'].apply(
-                lambda x: len(x))
+                lambda x: len(x)
+            )
             self._frag_msms = self.backbone_spectrums()
 
-        elif table_input.endswith("hdf5"):
-            Error("Hdf5 input currently no enabled")
-            raise NotImplementedError("Hdf5 input currently no enabled")
+        elif table_input.endswith('hdf5'):
+            Error('Hdf5 input currently no enabled')
+            raise NotImplementedError('Hdf5 input currently no enabled')
             # self._hdf5 = True
             # _feat = h5py.File(table_input, 'r')
             # # Peptide, Charge, collision_energy_aligned_normed, Label,
@@ -57,7 +61,7 @@ class SemiDataset:
             # np.random.shuffle(order)
             # self._data = self._data.reindex(order)
             # self._frag_msms = self._frag_msms[order]
-        Info(f"Total {len(self._frag_msms)} data were loaded")
+        Info(f'Total {len(self._frag_msms)} data were loaded')
         self._data['_numeric_id'] = np.arange(len(self._data))
         self._d, self._df, self._test_d, self._test_df = self.split_dataset()
         self._scores = None
@@ -69,8 +73,7 @@ class SemiDataset:
             self.assign_test_score(self._test_d[score_init])
 
     def reverse(self):
-        Debug(
-            f"[Dataset reverse]: {len(self._d)} -> {len(self._test_d)}")
+        Debug(f'[Dataset reverse]: {len(self._d)} -> {len(self._test_d)}')
         self._d, self._test_d = self._test_d, self._d
         self._df, self._test_df = self._test_df, self._df
         self._scores = None
@@ -83,8 +86,9 @@ class SemiDataset:
     def backbone_spectrums(self):
         sp = self._data.apply(
             lambda x: reverse_annotation(
-                x['matched_ions'], x['matched_inten'], x['Charge'], x['sequence_length']).reshape(1, -1),
-            axis=1
+                x['matched_ions'], x['matched_inten'], x['Charge'], x['sequence_length']
+            ).reshape(1, -1),
+            axis=1,
         )
         return np.concatenate(sp, axis=0)
 
@@ -110,12 +114,14 @@ class SemiDataset:
         decoys = self._data[self._data['Label'] == -1]
         decoys_frag = self._frag_msms[self._data['Label'] == -1]
 
-        train_data = targets.append(decoys[:len(decoys) // 2])
+        train_data = targets.append(decoys[: len(decoys) // 2])
         train_frag = np.concatenate(
-            (targets_frag, decoys_frag[:len(decoys) // 2]), axis=0)
-        test_data = targets.append(decoys[len(decoys) // 2:])
+            (targets_frag, decoys_frag[: len(decoys) // 2]), axis=0
+        )
+        test_data = targets.append(decoys[len(decoys) // 2 :])
         test_decoy_frag = np.concatenate(
-            (targets_frag, decoys_frag[len(decoys) // 2:]), axis=0)
+            (targets_frag, decoys_frag[len(decoys) // 2 :]), axis=0
+        )
         return train_data, train_frag, test_data, test_decoy_frag
 
     def id2remove(self):
@@ -158,30 +164,29 @@ class SemiDataset:
         return q_values
 
     def prepare_sa_data(self, table, frag_msms):
-        xlabel = ["sequence_integer",
-                  "precursor_charge_onehot",
-                  "collision_energy_aligned_normed"]
-        ylabel = "intensities_raw"
-        names = xlabel + [ylabel, "label"]
+        xlabel = [
+            'sequence_integer',
+            'precursor_charge_onehot',
+            'collision_energy_aligned_normed',
+        ]
+        ylabel = 'intensities_raw'
+        names = xlabel + [ylabel, 'label']
 
         y_data = torch.from_numpy(frag_msms)
         if not self._hdf5:
-            seq_data = list(table.apply(
-                lambda x: peptide_to_inter(x['Peptide']), axis=1))
+            seq_data = list(
+                table.apply(lambda x: peptide_to_inter(x['Peptide']), axis=1)
+            )
             seq_data = torch.from_numpy(np.concatenate(seq_data))
         else:
-            seq_data = [i.reshape(1, -1)
-                        for i in table['Peptide_integer'].to_list()]
-            seq_data = torch.from_numpy(
-                np.concatenate(seq_data))
+            seq_data = [i.reshape(1, -1) for i in table['Peptide_integer'].to_list()]
+            seq_data = torch.from_numpy(np.concatenate(seq_data))
 
         if not self._hdf5:
-            charges = list(table.apply(
-                lambda x: one_hot(x['Charge'] - 1), axis=1))
+            charges = list(table.apply(lambda x: one_hot(x['Charge'] - 1), axis=1))
             charges = torch.from_numpy(np.concatenate(charges))
         else:
-            charges = [i.reshape(1, -1)
-                       for i in table['Charge_onehot'].to_list()]
+            charges = [i.reshape(1, -1) for i in table['Charge_onehot'].to_list()]
             charges = torch.from_numpy(np.concatenate(charges))
 
         nces = np.array(table['collision_energy_aligned_normed'])
@@ -217,7 +222,7 @@ class SemiDataset:
 
     def index_dataset_by_specid(self, specid):
         assert self._data['SpecId'].is_unique
-        spec_data = self._data.set_index("SpecId")
+        spec_data = self._data.set_index('SpecId')
         wanted_table = spec_data.loc[specid]
         wanted_frag = self._frag_msms[wanted_table['_numeric_id'].to_numpy()]
         return wanted_table, wanted_frag

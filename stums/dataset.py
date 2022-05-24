@@ -114,11 +114,11 @@ class SemiDataset:
         decoys = self._data[self._data['Label'] == -1]
         decoys_frag = self._frag_msms[self._data['Label'] == -1]
 
-        train_data = targets.append(decoys[: len(decoys) // 2])
+        train_data = pd.concat([targets, decoys[: len(decoys) // 2]])
         train_frag = np.concatenate(
             (targets_frag, decoys_frag[: len(decoys) // 2]), axis=0
         )
-        test_data = targets.append(decoys[len(decoys) // 2 :])
+        test_data = pd.concat([targets, decoys[len(decoys) // 2 :]])
         test_decoy_frag = np.concatenate(
             (targets_frag, decoys_frag[len(decoys) // 2 :]), axis=0
         )

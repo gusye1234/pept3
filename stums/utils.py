@@ -3,7 +3,16 @@ from copy import deepcopy
 
 import pandas as pd
 
-logging.basicConfig(format='%(asctime)s-[%(name)8s] > %(message)s', datefmt='%H:%M:%S')
+try:
+    from rich.logging import RichHandler
+
+    logging.basicConfig(
+        format='%(name)8s > %(message)s', datefmt='%H:%M:%S', handlers=[RichHandler()]
+    )
+except:
+    logging.basicConfig(
+        format='%(asctime)s-[%(name)8s] > %(message)s', datefmt='%H:%M:%S'
+    )
 
 LOGGING_LEVEL = logging.WARNING
 

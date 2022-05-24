@@ -35,3 +35,4 @@ jobs:
       - name: Test
         run: |
           python -m pytest -v ./tests
+          python -m stums ./examples/demo_data/demo_input.tab --spmodel=prosit --similarity=SA --output_tab=./examples/demo_data/demo_out.tab --need_tensor --output_tensor=./examples/demo_data/tensor.hdf5

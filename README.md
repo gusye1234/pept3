@@ -6,7 +6,7 @@
   </p>
 </div>
 
-### Get Started in CLI
+## Get Started in CLI
 
 Run
 
@@ -36,7 +36,7 @@ python finetune_demo.py
 You should get the identical result as the *Get Started in CLI* section.
 The script `finetune_demo.py` will demonstrate the process of how `StuMS` working inside python.
 
-### Input Format
+## Input Format
 
 StuMS expect a tab-delimited file format as the input, just like [Percolator](https://github.com/percolator/percolator/wiki/Interface#pintsv-tab-delimited-file-format).
 Each row should contains features associated with a single PSM:
@@ -59,7 +59,7 @@ For StuMS, the input tab file should at least include those fields:
 For the input example, have a look at `./examples/demo_data/demo_input.tab`.
 *Please note that: For any feature that not on the above list, StuMS will automaticly merge it into the output tab*
 
-### Output Format
+## Output Format
 
 StuMS outputs a tab-delimited file format with each row contains enlarged features associated with a single PSM. The output tab file can be directly used as the input of the [Percolator](https://github.com/percolator/percolator). Have a look at each features meaning in `./FEATURES.txt`.
 Also, for those who want to visit the fine-tuned spectrum prediction, use `--need_tensor` option and set `--output_tensor`. The prediction will be store as the format of `hfd5`, with columns `SpecId` and `fine-tuned-tensor`.

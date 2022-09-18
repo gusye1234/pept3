@@ -1,6 +1,6 @@
 import pytest
 
-from stums import models
+from tfpms import models
 
 
 def test_deps():

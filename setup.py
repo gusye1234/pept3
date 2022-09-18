@@ -1,7 +1,7 @@
 import setuptools
 from importlib_metadata import entry_points
 
-import stums
+import tfpms
 
 with open('README.md', 'r') as fh:
     long_description = fh.read()
@@ -9,14 +9,14 @@ with open('requirements.txt', 'r') as fh:
     deps = [l.strip() for l in fh]
 
 setuptools.setup(
-    name='stums',
-    url=stums.__url__,
-    version=stums.__version__,
-    author=stums.__author__,
-    description='Semi-supervised Fine-tuning for Mass Spectrum Prediction',
+    name='tfpms',
+    url=tfpms.__url__,
+    version=tfpms.__version__,
+    author=tfpms.__author__,
+    description='Data-specific model fine-tuning for MS/MS spectrum prediction',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    packages=['stums'],
+    packages=['tfpms'],
     classifiers=[
         'Programming Language :: Python :: 3',
         'License :: OSI Approved :: MIT License',
@@ -26,7 +26,7 @@ setuptools.setup(
     install_requires=deps,
     entry_points={
         'console_scripts': [
-            'stums = stums:main',
+            'tfpms = tfpms:main',
         ]
     },
 )

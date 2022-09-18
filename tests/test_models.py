@@ -1,7 +1,7 @@
 import pytest
 import torch
 
-from stums import models, utils
+from tfpms import models, utils
 
 MOCK_INPUT = {
     'sequence_integer': torch.tensor(
@@ -230,7 +230,8 @@ def test_prosit_structure():
     assert 'prosit' in models.Model_Factories
     prosit = models.Model_Factories['prosit']()
     prosit.load_state_dict(
-        torch.load(models.Model_Weights_Factories('prosit'), map_location='cpu')
+        torch.load(models.Model_Weights_Factories(
+            'prosit'), map_location='cpu')
     )
     prosit = prosit.eval()
     with torch.no_grad():

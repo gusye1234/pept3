@@ -12,26 +12,26 @@ from .similarity import Similarity_Factories
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description='tfpms: Data-specific model fine-tuning for MS/MS spectrum prediction'
+        description='pept3: Data-specific model tuning for MS/MS spectrum prediction'
     )
     parser.add_argument(
         'input_tab',
         metavar='Input Feature Tab',
         type=str,
         nargs=1,
-        help='The input file for tfpms',
+        help='The input file for pept3',
     )
     parser.add_argument(
         '--iteration',
         type=int,
         default=10,
-        help='maximum iteration times for tfpms, lower this number could reduce running time but also may reduce the performance',
+        help='maximum iteration times for pept3, lower this number could reduce running time but also may reduce the performance',
     )
     parser.add_argument(
         '--gpu_index',
         type=int,
         default=0,
-        help='GPU id for tfpms, if CUDA is available',
+        help='GPU id for pept3, if CUDA is available',
     )
     parser.add_argument(
         '--spmodel',
@@ -58,20 +58,20 @@ def parse_args():
         '--output_tab',
         type=str,
         default='./prosit_feature.tab',
-        help='Output tab file for the fine-tuned prosit features set',
+        help='Output tab file for the tuned prosit features set',
     )
     parser.add_argument(
         '--need_tensor',
         action='store_const',
         const=True,
         default=False,
-        help='Need tensor hdf5 file for the fine-tuned spectrum prediction, default False',
+        help='Need tensor hdf5 file for the tuned spectrum prediction, default False',
     )
     parser.add_argument(
         '--output_tensor',
         type=str,
         default='./stu_tensor.hdf5',
-        help='Output tensor hdf5 file for the fine-tuned spectrum prediction',
+        help='Output tensor hdf5 file for the tuned spectrum prediction',
     )
     return parser.parse_args()
 

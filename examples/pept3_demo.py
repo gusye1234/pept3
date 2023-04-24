@@ -4,10 +4,10 @@ import sys
 import torch
 
 sys.path.append('../')
-from tfpms import utils
-from tfpms.features import generate_prosit_feature_set
-from tfpms.finetune import semisupervised_finetune_twofold
-from tfpms.models import PrositFrag, pDeep2_nomod
+from pept3 import utils
+from pept3.features import generate_prosit_feature_set
+from pept3.finetune import semisupervised_finetune_twofold
+from pept3.models import PrositFrag, pDeep2_nomod
 
 utils.LOGGING_LEVEL = logging.INFO
 

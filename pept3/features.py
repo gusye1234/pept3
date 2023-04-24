@@ -257,7 +257,7 @@ def generate_prosit_feature_set(
     output_feature.to_csv(save2, sep='\t', index=False)
     logger.info(f'Saving features to {save2}')
     if tensor_need and tensor_path is not None:
-        logger.info(f'Saving fine-tuned tensors into {tensor_path}')
+        logger.info(f'Saving tuned tensors into {tensor_path}')
         if not os.path.exists(os.path.dirname(tensor_path)):
             logger.warning(
                 f'Output Tensor Path {os.path.dirname(save2)} is not existed, creating it'
@@ -265,7 +265,7 @@ def generate_prosit_feature_set(
             os.mkdir(os.path.dirname(tensor_path))
         f = h5py.File(tensor_path, 'w')
         tensor_dest = f.create_dataset(
-            'fine-tuned-tensor', score_tensor.shape, dtype=score_tensor.dtype
+            'tuned-tensor', score_tensor.shape, dtype=score_tensor.dtype
         )
         tensor_dest[:] = score_tensor[:]
         ids = [str(n).encode('ascii', 'ignore') for n in Fs['SpecId']]

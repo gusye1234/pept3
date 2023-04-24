@@ -1,7 +1,7 @@
 import pytest
 import torch
 
-from tfpms import models, utils
+from pept3 import models, utils
 
 MOCK_INPUT = {
     'sequence_integer': torch.tensor(

@@ -68,7 +68,7 @@ def semisupervised_finetune_twofold(
                     q_values_num = np.sum(q_values < validate_q_threshold)
                     if epoch == 0:
                         logger.info(
-                            f'No fine-tuned {spectrum_sim} for FDR@[0.001, 0.01, 0.1]: {(np.sum(q_values < 0.001), np.sum(q_values < 0.01), np.sum(q_values < 0.1))}'
+                            f'No tuned {spectrum_sim} for FDR@[0.001, 0.01, 0.1]: {(np.sum(q_values < 0.001), np.sum(q_values < 0.01), np.sum(q_values < 0.1))}'
                         )
                 if q_values_num > best_q_value_num:
                     best_model = deepcopy(model)

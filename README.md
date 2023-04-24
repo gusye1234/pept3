@@ -1,8 +1,8 @@
 <div align="center">
-  <h1>TFP</h1>
-  <p><strong>Data-specific model fine-tuning for MS/MS spectrum prediction</strong></p>
+  <h1>PepT3</h1>
+  <p><strong>Test-time training for deep MS/MS spectrum prediction improves peptide identification</strong></p>
   <p>
-    <img src="https://github.com/gusye1234/TFP/actions/workflows/main.yml/badge.svg">
+    <img src="https://github.com/gusye1234/PepT3/actions/workflows/main.yml/badge.svg">
   </p>
 </div>
 
@@ -12,41 +12,38 @@
 Run
 
 ```shell
-python -m tfpms ./examples/demo_data/demo_input.tab --spmodel=prosit --similarity=SA --output_tab=./examples/demo_data/demo_out.tab --need_tensor --output_tensor=./examples/demo_data/tensor.hdf5
+python -m pept3 ./examples/demo_data/demo_input.tab --spmodel=prosit --similarity=SA --output_tab=./examples/demo_data/demo_out.tab --need_tensor --output_tensor=./examples/demo_data/tensor.hdf5
 ```
-
-to perform a simple fine-tuneing over Prosit(`--spmodel=prosit`) with Spectral Angle(`--similarity=SA`). The program will take `./examples/demo_data/demo_input.tab` as the input file.
-
-Then the finetuned features is outputed to `./examples/demo_data/demo_out.tab`, which is already for the downstream task, for example, as the input of the [Percolator](https://github.com/percolator/percolator):
-
+to perform a simple test-time training over Prosit(`--spmodel=prosit`) with Spectral Angle(`--similarity=SA`). 
+The program will take `./examples/demo_data/demo_input.tab` as the input file. Then the tuned features will be outputted to `./examples/demo_data/demo_out.tab`, which is already for the downstream task, for example, as the input of the [Percolator](https://github.com/percolator/percolator):
 ```shell
 cd examples
-bash ./percolator.sh # rescoring over the fine-tuned features set
+bash ./percolator.sh # rescoring over the tuned features set
 # the result will be saved in ./examples/percolator_result
 ```
 
-### Get Started in `TFP` Internals
+### Get Started in `PepT3` Internals
 
 Run
 
 ```shell
 cd examples
-python finetune_demo.py
+python pept3_demo.py
 ```
 
 You should get the identical result as the *Get Started in CLI* section.
-The script `finetune_demo.py` will demonstrate the process of how `TFP` working inside python.
+The script `pept3_demo.py` will demonstrate the process of how `PepT3` working inside python.
 
 ## Input Format
 
-TFP expect a tab-delimited file format as the input, just like [Percolator](https://github.com/percolator/percolator/wiki/Interface#pintsv-tab-delimited-file-format).
+PepT3 expect a tab-delimited file format as the input, just like [Percolator](https://github.com/percolator/percolator/wiki/Interface#pintsv-tab-delimited-file-format).
 Each row should contains features associated with a single PSM:
 
 ```
 SpecId <tab> Label <tab> ScanNr <tab> matched_ions <tab> matched_inten <tab> ... Charge <tab> <tab> Peptide <tab>
 ```
 
-For TFP, the input tab file should at least include those fields:
+For PepT3, the input tab file should at least include those fields:
 
 * `SpecId`(any type): **Unique** id for each PSM.
 * `ScanNr`(any type): Same meaning as the [Percolator](https://github.com/percolator/percolator/wiki/Interface#pintsv-tab-delimited-file-format).
@@ -58,10 +55,10 @@ For TFP, the input tab file should at least include those fields:
 * `Peptides`(str)
 
 For the input example, have a look at `./examples/demo_data/demo_input.tab`.
-*Please note that: For any feature that not on the above list, TFP will automaticly merge it into the output tab*
+*Please note that: For any feature that not on the above list, PepT3 will automaticly merge it into the output tab*
 
 ## Output Format
 
-TFP outputs a tab-delimited file format with each row contains enlarged features associated with a single PSM. The output tab file can be directly used as the input of the [Percolator](https://github.com/percolator/percolator). Have a look at each features meaning in `./FEATURES.txt`.
-Also, for those who want to visit the fine-tuned spectrum prediction, use `--need_tensor` option and set `--output_tensor`. The prediction will be store as the format of `hfd5`, with columns `SpecId` and `fine-tuned-tensor`.
+PepT3 outputs a tab-delimited file format with each row contains enlarged features associated with a single PSM. The output tab file can be directly used as the input of the [Percolator](https://github.com/percolator/percolator). Have a look at each features meaning in `./FEATURES.txt`.
+Also, for those who want to visit the tuned spectrum prediction, use `--need_tensor` option and set `--output_tensor`. The prediction will be store as the format of `hfd5`, with columns `SpecId` and `tuned-tensor`.
 For the output example, please have a look at `./examples/demo_data/demo_out.tab` and `./examples/demo_data/tensor.hdf5`

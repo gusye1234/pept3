@@ -1,6 +1,6 @@
 import pytest
 
-from tfpms import models
+from pept3 import models
 
 
 def test_deps():

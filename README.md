@@ -6,8 +6,11 @@
     <img src="https://img.shields.io/badge/python-3.7-blue.svg">
     <img src="https://img.shields.io/badge/python-3.8-blue.svg">
     <img src="https://img.shields.io/badge/python-3.9-blue.svg">
+    <img src="https://svgshare.com/i/Zhy.svg">
+    <img src="https://svgshare.com/i/ZhY.svg">
   </p>
 </div>
+
 
 
 
@@ -16,10 +19,11 @@
 Run:
 
 ```shell
-python -m pept3 ./examples/demo_data/demo_input.tab --spmodel=prosit --similarity=SA --output_tab=./examples/demo_data/demo_out.tab --need_tensor --output_tensor=./examples/demo_data/tensor.hdf5
+pept3 ./examples/demo_data/demo_input.tab --spmodel=prosit --similarity=SA --output_tab=./examples/demo_data/demo_out.tab --need_tensor --output_tensor=./examples/demo_data/tensor.hdf5
 ```
 to perform a simple test-time training over Prosit(`--spmodel=prosit`) with Spectral Angle(`--similarity=SA`).
 The program will take `./examples/demo_data/demo_input.tab` as the input file. Then the tuned features will be outputted to `./examples/demo_data/demo_out.tab`, which is already for the downstream task, for example, as the input of the [Percolator](https://github.com/percolator/percolator):
+
 ```shell
 cd examples
 bash ./percolator_demo.sh # rescoring over the tuned features set
@@ -37,16 +41,20 @@ python pept3_demo.py
 
 You should get the identical result. The script `pept3_demo.py` will demonstrate the process of how `PepT3` working inside python.
 
-## Develop Locally
+## Set up locally
 
 clone this repo with:
 
-```
+```shell
 git clone https://github.com/gusye1234/pept3.git
-
-# if you want to access the pre-trained model:
+# fetch the pre-trained model weights:
 git lfs install
 git lfs pull
+# install pept3 to python environment
+pip install -e .
+
+# run pept3 like an installed command
+pept3 ...
 ```
 
 ## Input Format

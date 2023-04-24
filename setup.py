@@ -17,7 +17,7 @@ setuptools.setup(
     url=varstfp['__url__'],
     version=varstfp['__version__'],
     author=varstfp['__author__'],
-    description='Data-specific model tuning for MS/MS spectrum prediction',
+    description='Test-time training for deep MS/MS spectrum prediction improves peptide identification',
     long_description=long_description,
     long_description_content_type='text/markdown',
     packages=['pept3'],

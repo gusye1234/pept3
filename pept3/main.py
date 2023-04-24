@@ -6,7 +6,7 @@ import torch
 from . import utils
 from .features import generate_prosit_feature_set
 from .finetune import semisupervised_finetune_twofold
-from .models import Model_Factories, Model_Weights_Factories
+from .models import ROOT_DIR, Model_Factories, Model_Weights_Factories
 from .similarity import Similarity_Factories
 
 
@@ -83,6 +83,7 @@ def main():
 
     logger = utils.get_logger('MAIN')
     logger.info(f'Set Log Level to {args.loglevel}')
+    logger.info(f'Root dir for pept3 is {ROOT_DIR}')
     spectrum_model = Model_Factories[args.spmodel]()
     logger.info(f'Model using: {args.spmodel}')
 

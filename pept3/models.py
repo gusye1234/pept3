@@ -1,3 +1,5 @@
+import os
+
 import torch
 import torch.nn.functional as F
 from torch import Tensor, nn
@@ -190,10 +192,11 @@ class PrositFrag(nn.Module):
 
 
 Model_Factories = {'prosit': PrositFrag, 'pdeep': pDeep2_nomod}
+ROOT_DIR = os.path.dirname(os.path.dirname(__file__))
 
 _Model_Weights_Factories = {
-    'prosit': './assets/best_frag_l1_PrositFrag-1024.pth',
-    'pdeep': './assets/best_frag_l1_pDeep2-1024.pth',
+    'prosit': os.path.join(ROOT_DIR, 'assets/best_frag_l1_PrositFrag-1024.pth'),
+    'pdeep': os.path.join(ROOT_DIR, 'assets/best_frag_l1_pDeep2-1024.pth'),
 }
 
 _Model_Weights_Url_Factories = {}

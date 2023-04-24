@@ -3,13 +3,17 @@
   <p><strong>Test-time training for deep MS/MS spectrum prediction improves peptide identification</strong></p>
   <p>
     <img src="https://github.com/gusye1234/PepT3/actions/workflows/main.yml/badge.svg">
+    <img src="https://img.shields.io/badge/python-3.7-blue.svg">
+    <img src="https://img.shields.io/badge/python-3.8-blue.svg">
+    <img src="https://img.shields.io/badge/python-3.9-blue.svg">
   </p>
 </div>
 
 
+
 ## Get Started in CLI
 
-Run
+Run:
 
 ```shell
 python -m pept3 ./examples/demo_data/demo_input.tab --spmodel=prosit --similarity=SA --output_tab=./examples/demo_data/demo_out.tab --need_tensor --output_tensor=./examples/demo_data/tensor.hdf5
@@ -22,17 +26,28 @@ bash ./percolator.sh # rescoring over the tuned features set
 # the result will be saved in ./examples/percolator_result
 ```
 
-### Get Started in `PepT3` Internals
 
-Run
+
+Also a python script for the above demo commands is available:
 
 ```shell
 cd examples
 python pept3_demo.py
 ```
 
-You should get the identical result as the *Get Started in CLI* section.
-The script `pept3_demo.py` will demonstrate the process of how `PepT3` working inside python.
+You should get the identical result. The script `pept3_demo.py` will demonstrate the process of how `PepT3` working inside python.
+
+## Develop Locally
+
+clone this repo with:
+
+```
+git clone https://github.com/gusye1234/pept3.git
+
+# if you want to access the pre-trained model:
+git lfs install
+git lfs pull
+```
 
 ## Input Format
 

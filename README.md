@@ -22,7 +22,7 @@ to perform a simple test-time training over Prosit(`--spmodel=prosit`) with Spec
 The program will take `./examples/demo_data/demo_input.tab` as the input file. Then the tuned features will be outputted to `./examples/demo_data/demo_out.tab`, which is already for the downstream task, for example, as the input of the [Percolator](https://github.com/percolator/percolator):
 ```shell
 cd examples
-bash ./percolator.sh # rescoring over the tuned features set
+bash ./percolator_demo.sh # rescoring over the tuned features set
 # the result will be saved in ./examples/percolator_result
 ```
 

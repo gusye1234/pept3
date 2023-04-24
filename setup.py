@@ -2,12 +2,11 @@ import setuptools
 
 vars2find = ['__author__', '__version__', '__url__']
 varstfp = {}
-with open("./pept3/__init__.py") as f:
+with open('./pept3/__init__.py') as f:
     for line in f.readlines():
         for v in vars2find:
             if line.startswith(v):
-                line = line.replace(" ", '').replace(
-                    "\"", '').replace("\'", '').strip()
+                line = line.replace(' ', '').replace("\"", '').replace("\'", '').strip()
                 varstfp[v] = line.split('=')[1]
 
 with open('README.md', 'r') as fh:
@@ -28,11 +27,7 @@ setuptools.setup(
         'Operating System :: OS Independent',
     ],
     python_requires='>=3.6',
-    install_requires=["h5py",
-                      "numpy",
-                      "pandas",
-                      "torch"
-                      ],
+    install_requires=['h5py', 'numpy', 'pandas', 'torch'],
     entry_points={
         'console_scripts': [
             'pept3 = pept3:main',

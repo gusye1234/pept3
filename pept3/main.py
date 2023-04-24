@@ -12,7 +12,7 @@ from .similarity import Similarity_Factories
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description='pept3: Data-specific model tuning for MS/MS spectrum prediction'
+        description='pept3: Test-time training for deep MS/MS spectrum prediction improves peptide identification'
     )
     parser.add_argument(
         'input_tab',

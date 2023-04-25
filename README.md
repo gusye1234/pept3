@@ -1,6 +1,6 @@
 <div align="center">
   <h1>PepT3</h1>
-  <p><strong>Test-time training for deep MS/MS spectrum prediction improves peptide identification</strong></p>
+  <p><strong>Test-time training for deep MS/MS spectrum prediction</strong></p>
   <p>
     <img src="https://github.com/gusye1234/PepT3/actions/workflows/main.yml/badge.svg">
     <img src="https://img.shields.io/badge/python-3.7-blue.svg">
@@ -10,6 +10,7 @@
     <img src="https://svgshare.com/i/ZhY.svg">
   </p>
 </div>
+
 
 
 
@@ -59,7 +60,7 @@ pept3 ...
 
 ## Input Format
 
-PepT3 expect a tab-delimited file format as the input, just like [Percolator](https://github.com/percolator/percolator/wiki/Interface#pintsv-tab-delimited-file-format).
+PepT3 expects a tab-delimited file format as the input, just like [Percolator](https://github.com/percolator/percolator/wiki/Interface#pintsv-tab-delimited-file-format).
 Each row should contains features associated with a single PSM:
 
 ```

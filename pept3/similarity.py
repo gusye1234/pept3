@@ -21,18 +21,33 @@ def spectral_angle(true, pred):
     return 1 - (2 / torch.pi) * torch.arccos(re)
 
 
-def pearson_coff(true, pred):
+def pearson_coff(true: torch.Tensor, pred: torch.Tensor) -> torch.Tensor:
+    """
+    Computes the Pearson correlation coefficient between the true and predicted tensors.
+
+    Args:
+        true (torch.Tensor): The true tensor.
+        pred (torch.Tensor): The predicted tensor.
+
+    Returns:
+        torch.Tensor: The Pearson correlation coefficient between the true and predicted tensors.
+    """
+    # Create a mask to zero out negative values in the true tensor
     true_mask = (true >= 0).float()
 
+    # Apply the mask to the predicted tensor
     pred2com = pred * true_mask
     true2com = true * true_mask
 
+    # Subtract the mean of each row from the corresponding row in the predicted and true tensors
     pred2com -= torch.mean(pred2com, dim=1).unsqueeze(-1)
     true2com -= torch.mean(true2com, dim=1).unsqueeze(-1)
 
+    # Normalize the rows of the predicted and true tensors
     pred2com = F.normalize(pred2com, dim=1)
     true2com = F.normalize(true2com, dim=1)
 
+    # Compute the dot product between each row of the predicted and true tensors and sum them up
     return torch.sum(pred2com * true2com, dim=-1)
 
 

@@ -6,8 +6,6 @@
     <img src="https://img.shields.io/badge/python-3.7-blue.svg">
     <img src="https://img.shields.io/badge/python-3.8-blue.svg">
     <img src="https://img.shields.io/badge/python-3.9-blue.svg">
-    <img src="https://svgshare.com/i/Zhy.svg">
-    <img src="https://svgshare.com/i/ZhY.svg">
   </p>
 </div>
 

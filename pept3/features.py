@@ -202,7 +202,9 @@ def generate_prosit_feature_set(
 
     def add_kr():
         Fs['KR'] = np.array(
-            table_data['Peptide'].apply(lambda x: any(map(lambda y: y in 'KR', x)))
+            table_data['Peptide'].apply(
+                lambda x: sum(map(lambda y: 1 if y in 'KR' else 0, x))
+            )
         )
 
     def join_unused_feature():

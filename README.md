@@ -3,6 +3,7 @@
   <p><strong>Test-time training for deep MS/MS spectrum prediction</strong></p>
   <p>
     <img src="https://github.com/gusye1234/PepT3/actions/workflows/main.yml/badge.svg">
+    <a href="https://pypi.org/project/pept3/"><img src="https://badge.fury.io/py/pept3.svg" alt="PyPI version" height="18"></a>
     <img src="https://img.shields.io/badge/python-3.7-blue.svg">
     <img src="https://img.shields.io/badge/python-3.8-blue.svg">
     <img src="https://img.shields.io/badge/python-3.9-blue.svg">
@@ -12,33 +13,12 @@
 
 
 
-
-## Get Started in CLI
-
-Run:
+## Get Started
 
 ```shell
-pept3 ./examples/demo_data/demo_input.tab --spmodel=prosit --similarity=SA --output_tab=./examples/demo_data/demo_out.tab --need_tensor --output_tensor=./examples/demo_data/tensor.hdf5
+pip install pept3
 ```
-to perform a simple test-time training over Prosit(`--spmodel=prosit`) with Spectral Angle(`--similarity=SA`).
-The program will take `./examples/demo_data/demo_input.tab` as the input file. Then the tuned features will be outputted to `./examples/demo_data/demo_out.tab`, which is already for the downstream task, for example, as the input of the [Percolator](https://github.com/percolator/percolator):
-
-```shell
-cd examples
-bash ./percolator_demo.sh # rescoring over the tuned features set
-# the result will be saved in ./examples/percolator_result
-```
-
-
-
-Also a python script for the above demo commands is available:
-
-```shell
-cd examples
-python pept3_demo.py
-```
-
-You should get the identical result. The script `pept3_demo.py` will demonstrate the process of how `PepT3` working inside python.
+To get to know `pept3`, follow the next section to run a demo data.
 
 ## Set up locally
 
@@ -53,8 +33,26 @@ git lfs pull
 pip install -e .
 
 # run pept3 like an installed command
-pept3 ...
+pept3 ./examples/demo_data/demo_input.tab --spmodel=prosit --similarity=SA --output_tab=./examples/demo_data/demo_out.tab --need_tensor --output_tensor=./examples/demo_data/tensor.hdf5
 ```
+
+to perform a simple test-time training over Prosit(`--spmodel=prosit`) with Spectral Angle(`--similarity=SA`).
+The program will take `./examples/demo_data/demo_input.tab` as the input file. Then the tuned features will be outputted to `./examples/demo_data/demo_out.tab`, which is already for the downstream task, for example, as the input of the [Percolator](https://github.com/percolator/percolator):
+
+```shell
+cd examples
+bash ./percolator_demo.sh # rescoring over the tuned features set
+# the result will be saved in ./examples/percolator_result
+```
+
+Also a python script for the above demo commands is available:
+
+```shell
+cd examples
+python pept3_demo.py
+```
+
+You should get the identical result. The script `pept3_demo.py` will demonstrate the process of how `PepT3` working inside python.
 
 ## Input Format
 

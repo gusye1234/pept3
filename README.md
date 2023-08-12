@@ -62,7 +62,7 @@ PepT3 expects a tab-delimited file format as the input, just like [Percolator](h
 Each row should contains features associated with a single PSM:
 
 ```
-SpecId <tab> Label <tab> ScanNr <tab> matched_ions <tab> matched_inten <tab> ... Charge <tab> <tab> Peptide <tab>
+SpecId <tab> Label <tab> ScanNr <tab> peak_ions <tab> peak_inten <tab> ... Charge <tab> <tab> Peptide <tab>
 ```
 
 For PepT3, the input tab file should at least include those fields:
@@ -70,8 +70,8 @@ For PepT3, the input tab file should at least include those fields:
 * `SpecId`(any type): **Unique** id for each PSM.
 * `ScanNr`(any type): Same meaning as the [Percolator](https://github.com/percolator/percolator/wiki/Interface#pintsv-tab-delimited-file-format).
 * `Label`({1, -1}): 1 for target PSM, -1 for decoys.
-* `matched_ions`: `;`-delimited matched ions for PSM, only b/y types are considered currently. For example `b10;b2;b3;`
-* `matched_inten`: Corresponding ions' intensities for the matched ions, also `;`-delimited. For example `829;4154;168;`
+* `peak_ions`: `;`-delimited matched ions for PSM, only b/y types are considered currently. For example `b10;b2;b3;`
+* `peak_inten`: Corresponding ions' intensities for the matched ions, also `;`-delimited. For example `829;4154;168;`
 * `Charge`(int):, Percursor Charge
 * `collision_energy_aligned_normed`(float, [0,1]): Maximun-normalized NCE.
 * `Peptides`(str)

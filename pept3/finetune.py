@@ -6,22 +6,23 @@ import torch
 from torch.utils.data import DataLoader
 
 from . import similarity, utils
-from .dataset import SemiDataset
+from .dataset import SemiDataset_nfold
 from .utils import get_logger
 
 
-def semisupervised_finetune_twofold(
+def pept3_nfold_finetune(
     ori_model,
     input_table,
     batch_size=2048,
     gpu_index=0,
+    nfold=3,
     max_epochs=10,
     update_interval=1,
     q_threshold=0.1,
     validate_q_threshold=0.01,
     spectrum_sim='SA',
     enable_test=False,
-    only_id2remove=False,
+    only_id2select=False,
 ):
     utils.set_seed(2022)
     logger = get_logger('finetune')
@@ -34,7 +35,7 @@ def semisupervised_finetune_twofold(
         )
     logger.debug(f'Run on {device}')
 
-    def finetune(dataset: SemiDataset):
+    def finetune(dataset: SemiDataset_nfold):
         model = deepcopy(ori_model)
         model = model.train()
         optimizer = torch.optim.AdamW(model.parameters(), lr=0.001, eps=1e-8)
@@ -43,15 +44,14 @@ def semisupervised_finetune_twofold(
         data_loader = DataLoader(
             dataset.train_all_data(), batch_size=batch_size, shuffle=False
         )
-        if dataset._scores is not None:
-            q_values = dataset.Q_values()
-            logger.info(
-                f'Baseline Score for FDR@[0.001, 0.01, 0.1]: {(np.sum(q_values < 0.001), np.sum(q_values < 0.01), np.sum(q_values < 0.1))}'
-            )
-            logger.info('---------------')
         logger.info(
             f'max iteration {max_epochs}, watching FDR threshold: {validate_q_threshold}, use --loglevel=debug to see the details in training'
         )
+        if dataset._scores is not None:
+            q_values = dataset.Q_values()
+            logger.info(
+                f'Baseline: FDR@[0.001, 0.01, 0.1]: {(np.sum(q_values < 0.001), np.sum(q_values < 0.01), np.sum(q_values < 0.1))}'
+            )
         best_model = None
         best_q_value_num = 0
         for epoch in range(max_epochs):
@@ -68,7 +68,7 @@ def semisupervised_finetune_twofold(
                     q_values_num = np.sum(q_values < validate_q_threshold)
                     if epoch == 0:
                         logger.info(
-                            f'No tuned {spectrum_sim} for FDR@[0.001, 0.01, 0.1]: {(np.sum(q_values < 0.001), np.sum(q_values < 0.01), np.sum(q_values < 0.1))}'
+                            f'{spectrum_sim} for FDR@[0.001, 0.01, 0.1]: {(np.sum(q_values < 0.001), np.sum(q_values < 0.01), np.sum(q_values < 0.1))}'
                         )
                 if q_values_num > best_q_value_num:
                     best_model = deepcopy(model)
@@ -106,20 +106,20 @@ def semisupervised_finetune_twofold(
             dataset.assign_train_score(scores)
             q_values = dataset.Q_values()
             logger.info(
-                f'   Finetuned {spectrum_sim} for FDR@[0.001, 0.01, 0.1]: {(np.sum(q_values < 0.001), np.sum(q_values < 0.01), np.sum(q_values < 0.1))}'
+                f'{spectrum_sim} with PepT3 for FDR@[0.001, 0.01, 0.1]: {(np.sum(q_values < 0.001), np.sum(q_values < 0.01), np.sum(q_values < 0.1))}'
             )
         return best_model
 
-    dataset_manager = SemiDataset(input_table)
-    id2remove = dataset_manager.id2remove()  # default first part
-    if only_id2remove:
-        return ori_model, ori_model, id2remove
-    logger.info('Training (1/2)...')
-    logger.info('---------------')
-    model1 = finetune(dataset_manager)
-
-    dataset_manager = dataset_manager.reverse()
-    logger.info('Training (2/2)...')
-    logger.info('---------------')
-    model2 = finetune(dataset_manager)
-    return model1, model2, id2remove
+    dataset_manager = SemiDataset_nfold(input_table, nfold=nfold)
+    id2select = dataset_manager.id2predict()
+    if only_id2select:
+        return [ori_model for _ in range(nfold)], id2select
+    models = []
+    for i in range(nfold):
+        dataset_manager.set_index(i)
+        logger.info(
+            f'Training ({i+1}/{nfold})... train set {len(dataset_manager._d)}, test set {len(dataset_manager._test_d)}'
+        )
+        model = finetune(dataset_manager)
+        models.append(model)
+    return models, id2select

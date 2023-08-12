@@ -227,8 +227,8 @@ def test_prosit_structure():
             ]
         ]
     )
-    assert 'prosit' in models.Model_Factories
-    prosit = models.Model_Factories['prosit']()
+
+    prosit = models.Model_Factories('prosit')
     prosit.load_state_dict(
         torch.load(models.Model_Weights_Factories('prosit'), map_location='cpu')
     )
@@ -419,8 +419,7 @@ def test_pdeep_structure():
             ]
         ]
     )
-    assert 'pdeep' in models.Model_Factories
-    pdeep = models.Model_Factories['pdeep']()
+    pdeep = models.Model_Factories('pdeep')
     pdeep.load_state_dict(
         torch.load(models.Model_Weights_Factories('pdeep'), map_location='cpu')
     )

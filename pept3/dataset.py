@@ -86,7 +86,7 @@ class SemiDataset:
     def backbone_spectrums(self):
         sp = self._data.apply(
             lambda x: reverse_annotation(
-                x['matched_ions'], x['matched_inten'], x['Charge'], x['sequence_length']
+                x['peak_ions'], x['peak_inten'], x['Charge'], x['sequence_length']
             ).reshape(1, -1),
             axis=1,
         )
@@ -230,6 +230,150 @@ class SemiDataset:
     def index_data_by_specid(self, specid):
         wanted_table, wanted_frag = self.index_dataset_by_specid(specid)
         names, data_sa = self.prepare_sa_data(wanted_table, wanted_frag)
+        return FinetuneTableDataset(names, data_sa)
+
+
+class SemiDataset_nfold(SemiDataset):
+    def __init__(
+        self, table_input, nfold=3, score_init='andromeda', pi=0.9, rawfile_fiels=None
+    ):
+        self._file_input = table_input
+        self._pi = pi
+        if not table_input.endswith('hdf5'):
+            self._hdf5 = False
+            self._data = (
+                pd.read_csv(table_input, sep='\t')
+                .sample(frac=1, random_state=2022)
+                .reset_index(drop=True)
+            )
+            self._frag_msms = self.backbone_spectrums()
+        else:
+            self._hdf5 = True
+            Error('Hdf5 input currently no enabled')
+            raise NotImplementedError('Hdf5 input currently no enabled')
+            # if rawfile_fiels is None:
+            #     _feat = h5py.File(table_input, 'r')
+            # else:
+            #     pass
+            # # Peptide, Charge, collision_energy_aligned_normed, Label,
+            # _label = np.array(_feat['reverse']).astype("int")
+            # _label[_label == 1] = -1
+            # _label[_label == 0] = 1
+            # self._data = pd.DataFrame({
+            #     "Peptide_integer": list(np.array(_feat['sequence_integer'])),
+            #     "Charge_onehot": list(np.array(_feat['precursor_charge_onehot'])),
+            #     "Label": _label.squeeze(),
+            #     "andromeda": np.array(_feat['score']).squeeze(),
+            #     "collision_energy_aligned_normed": np.array(_feat['collision_energy_aligned_normed']).squeeze()
+            # })
+            # self._frag_msms = np.array(_feat['intensities_raw'])
+            # print(f"Total {len(self._frag_msms)} data loader from hdf5")
+        Info(f'Total {len(self._frag_msms)} data were loaded')
+        self._data['_numeric_id'] = np.arange(len(self._data))
+        self._nfold = nfold
+        self._score_init = score_init
+        self._nfold_index = self.split_dataset()
+        self.set_index(0)
+
+    def set_index(self, index):
+        assert index < self._nfold
+        self._index = index
+        self._d, self._df = self.index2dataset(*self._nfold_index[index][:2])
+        self._test_d, self._test_df = self.index2dataset(*self._nfold_index[index][2:])
+        self.assign_train_score(self._d[self._score_init])
+        self.assign_test_score(self._test_d[self._score_init])
+        return self
+
+    def index2dataset(self, target_index, decoy_index):
+        # ms_data = self._data.iloc[target_index].append(self._data.iloc[decoy_index])
+        ms_data = pd.concat(
+            [self._data.iloc[target_index], self._data.iloc[decoy_index]],
+            ignore_index=True,
+        )
+        ms_frag = np.concatenate(
+            (self._frag_msms[target_index], self._frag_msms[decoy_index]), axis=0
+        )
+        return ms_data, ms_frag
+
+    def select_ids(self, id2select):
+        pass
+
+    def split_dataset(self):
+        targets_index = self._data[self._data['Label'] == 1].index.values
+        decoys_index = self._data[self._data['Label'] == -1].index.values
+
+        len_test_target = int(len(targets_index) / self._nfold)
+        len_test_decoy = int(len(decoys_index) / self._nfold)
+        nfold_index = []
+        for i in range(self._nfold):
+            t_start = i * len_test_target
+            t_end = (
+                (i + 1) * len_test_target
+                if i != (self._nfold - 1)
+                else len(targets_index)
+            )
+            d_start = i * len_test_decoy
+            d_end = (
+                (i + 1) * len_test_decoy
+                if i != (self._nfold - 1)
+                else len(decoys_index)
+            )
+
+            test_target = targets_index[t_start:t_end]
+            test_decoy = decoys_index[d_start:d_end]
+
+            train_target = np.concatenate(
+                [targets_index[:t_start], targets_index[t_end:]]
+            )
+            train_decoy = np.concatenate([decoys_index[:d_start], decoys_index[d_end:]])
+            nfold_index.append((train_target, train_decoy, test_target, test_decoy))
+
+        return nfold_index
+
+    def id2predict(self):
+        predictable_ids = []
+        if not self._hdf5:
+            for i in range(self._nfold):
+                test_d, _ = self.index2dataset(*self._nfold_index[i][2:])
+                predictable_ids.append(test_d['SpecId'])
+        else:
+            for i in range(self._nfold):
+                test_d, _ = self.index2dataset(*self._nfold_index[i][2:])
+                predictable_ids.append(test_d.index.values)
+        return predictable_ids
+
+
+class pDeep_nfold(SemiDataset_nfold):
+    def pdeep_train_score(self):
+        total_len = len(self._df)
+        frag_msms = self._df.reshape(total_len, 29, 2, 3)
+
+        pep_len = self._d['sequence_length'].to_list()
+        pep_len = np.array(pep_len)
+
+        b_ions = frag_msms[:, :, 0, :].reshape(total_len, -1)
+        y_ions = frag_msms[:, :, 1, :].reshape(total_len, -1)
+
+        scores = []
+        for i in range(total_len):
+            bion = b_ions[i]
+            yion = y_ions[i]
+            if self._d.iloc[i]['Label'] == -1:
+                scores.append(-float('inf'))
+                continue
+            s1 = np.log(np.sum(bion[bion > 0]) * np.sum(bion > 0) / pep_len[i] + 1e-7)
+            s2 = np.log(np.sum(yion[yion > 0]) * np.sum(yion > 0) / pep_len[i] + 1e-7)
+            scores.append(s1 + s2)
+        return scores
+
+    def pdeep3_finetune(self, max_sample=100):
+        max_sample_index = np.argsort(self._scores)[-max_sample:]
+        sat_d = self._d.iloc[max_sample_index]
+        sat_f = self._df[max_sample_index]
+        assert all(
+            sat_d['Label'].apply(lambda x: x == 1)
+        ), f'Target PSMs is lower than {max_sample}'
+        names, data_sa = self.prepare_sa_data(sat_d, sat_f)
         return FinetuneTableDataset(names, data_sa)
 
 

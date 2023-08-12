@@ -1,8 +1,13 @@
+import hashlib
 import os
 
 import torch
 import torch.nn.functional as F
 from torch import Tensor, nn
+
+from .utils import download_file, get_logger
+
+logger = get_logger('model')
 
 
 class AttentalSum(nn.Module):
@@ -191,16 +196,48 @@ class PrositFrag(nn.Module):
         return x
 
 
-Model_Factories = {'prosit': PrositFrag, 'pdeep': pDeep2_nomod}
-ROOT_DIR = os.path.dirname(os.path.dirname(__file__))
+_Model_Factories = {'prosit': PrositFrag, 'pdeep': pDeep2_nomod}
+ROOT_DIR = os.path.expanduser('~/.pept3_cache')
+if not os.path.exists(ROOT_DIR):
+    os.mkdir(ROOT_DIR)
 
 _Model_Weights_Factories = {
-    'prosit': os.path.join(ROOT_DIR, 'assets/best_frag_l1_PrositFrag-1024.pth'),
-    'pdeep': os.path.join(ROOT_DIR, 'assets/best_frag_l1_pDeep2-1024.pth'),
+    'prosit': os.path.join(ROOT_DIR, 'best_frag_l1_PrositFrag-1024.pth'),
+    'pdeep': os.path.join(ROOT_DIR, 'best_frag_l1_pDeep2-1024.pth'),
 }
 
-_Model_Weights_Url_Factories = {}
+_Model_Weights_Url_Factories = {
+    'prosit': 'https://github.com/gusye1234/pept3/raw/main/assets/best_frag_l1_PrositFrag-1024.pth',
+    'pdeep': 'https://github.com/gusye1234/pept3/raw/main/assets/best_frag_l1_pDeep2-1024.pth',
+}
+
+_Model_Weights_md5_Factories = {
+    'prosit': 'ec4bc8a7761c38f8732f5f53c3ec40ff',
+    'pdeep': 'ae4deb4efbc963c57bd1420ba5df109e',
+}
+
+
+def download_model(model_name, model_path):
+    model_url = _Model_Weights_Url_Factories[model_name]
+    download_file(model_url, model_path)
+
+
+def Model_Factories(model_name):
+    return _Model_Factories[model_name]()
 
 
 def Model_Weights_Factories(model_name):
-    return _Model_Weights_Factories[model_name]
+    model_path = _Model_Weights_Factories[model_name]
+    if not os.path.exists(model_path):
+        print(f'Download {model_name} to {ROOT_DIR}')
+        download_model(model_name, model_path)
+    else:
+        print(f'Load {model_name} from {model_path}')
+    with open(model_path, 'rb') as weights_bin:
+        md5_test = hashlib.md5()
+        md5_test.update(weights_bin.read())
+        assert (
+            md5_test.hexdigest() == _Model_Weights_md5_Factories[model_name]
+        ), f'Wrong md5 checksum, please remove {model_path} and re-run'
+        logger.info(f'{model_name} passed checksum')
+        return model_path

@@ -5,8 +5,8 @@ import torch
 
 from . import utils
 from .features import generate_prosit_feature_set
-from .finetune import semisupervised_finetune_twofold
-from .models import ROOT_DIR, Model_Factories, Model_Weights_Factories
+from .finetune import pept3_nfold_finetune
+from .models import ROOT_DIR, Model_Factories, Model_Weights_Factories, _Model_Factories
 from .similarity import Similarity_Factories
 
 
@@ -37,7 +37,7 @@ def parse_args():
         '--spmodel',
         type=str,
         default='prosit',
-        choices=list(Model_Factories.keys()),
+        choices=list(_Model_Factories.keys()),
         help='Spectrum Prediction Models, all the models are re-implemented in PyTorch.',
     )
     parser.add_argument(
@@ -84,7 +84,7 @@ def main():
     logger = utils.get_logger('MAIN')
     logger.info(f'Set Log Level to {args.loglevel}')
     logger.info(f'Root dir for pept3 is {ROOT_DIR}')
-    spectrum_model = Model_Factories[args.spmodel]()
+    spectrum_model = Model_Factories(args.spmodel)
     logger.info(f'Model using: {args.spmodel}')
 
     table_file = args.input_tab[0]
@@ -95,7 +95,7 @@ def main():
     spectrum_model.load_state_dict(torch.load(checkpoint, map_location='cpu'))
     spectrum_model = spectrum_model.eval()
 
-    fmodel1, fmodel2, id2remove = semisupervised_finetune_twofold(
+    models, id2select = pept3_nfold_finetune(
         spectrum_model,
         table_file,
         gpu_index=args.gpu_index,
@@ -104,10 +104,9 @@ def main():
     )
 
     generate_prosit_feature_set(
-        fmodel1,
-        fmodel2,
+        models,
         table_file,
-        id2remove,
+        id2select,
         save2=args.output_tab,
         tensor_need=args.need_tensor,
         tensor_path=args.output_tensor,

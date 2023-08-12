@@ -7,15 +7,14 @@ import torch
 from torch.utils.data import DataLoader
 
 from . import similarity, utils
-from .dataset import SemiDataset
+from .dataset import SemiDataset_nfold
 from .utils import get_logger
 
 
 def generate_prosit_feature_set(
-    model1,
-    model2,
+    models,
     input_table,
-    model1_specid,
+    id2selects,
     save2,
     batch_size=2048,
     gpu_index=0,
@@ -31,55 +30,31 @@ def generate_prosit_feature_set(
     else:
         device = torch.device('cpu')
     logger.info(f'Run on {device}')
-    model1 = model1.eval()
-    model2 = model2.eval()
 
-    dataset_manager = SemiDataset(input_table)
-    target_id, decoy1_id, decoy2_id = dataset_manager.specid_twofold_division(
-        model1_specid
-    )
+    dataset_manager = SemiDataset_nfold(input_table)
 
     with torch.no_grad():
-        target_loader = DataLoader(
-            dataset_manager.index_data_by_specid(target_id),
-            batch_size=batch_size,
-            shuffle=False,
-        )
-        t_score1, t_tensor1 = similarity.get_similarity_score_tensor(
-            model1, target_loader, which_sim, device=device
-        )
-        t_score2, t_tensor2 = similarity.get_similarity_score_tensor(
-            model2, target_loader, which_sim, device=device
-        )
-        target_score = (t_score1 + t_score2) / 2
-        target_tensor = (t_tensor1 + t_tensor2) / 2
+        sas = []
+        sas_tensor = []
+        ids_order = []
+        for now_i, (model, ids) in enumerate(zip(models, id2selects)):
+            logger.info(f'Infer subset [{now_i+1}/{len(models)}]')
+            subset_loader = DataLoader(
+                dataset_manager.index_data_by_specid(ids),
+                batch_size=batch_size,
+                shuffle=False,
+            )
+            t_score, t_tensor = similarity.get_similarity_score_tensor(
+                model, subset_loader, which_sim, device=device
+            )
+            sas.append(t_score)
+            sas_tensor.append(t_tensor)
+            ids_order.append(np.array(ids))
 
-        decoy1_loader = DataLoader(
-            dataset_manager.index_data_by_specid(decoy1_id),
-            batch_size=batch_size,
-            shuffle=False,
-        )
-        decoy1_score, decoy1_tensor = similarity.get_similarity_score_tensor(
-            model2, decoy1_loader, which_sim, device=device
-        )
-        decoy2_loader = DataLoader(
-            dataset_manager.index_data_by_specid(decoy2_id),
-            batch_size=batch_size,
-            shuffle=False,
-        )
-        decoy2_score, decoy2_tensor = similarity.get_similarity_score_tensor(
-            model1, decoy2_loader, which_sim, device=device
-        )
-
-        decoy1_score = decoy1_score
-        decoy2_score = decoy2_score
-        decoy1_tensor = decoy1_tensor
-        decoy2_tensor = decoy2_tensor
-
-    scores = np.concatenate([target_score, decoy1_score, decoy2_score])
-    score_tensor = np.concatenate([target_tensor, decoy1_tensor, decoy2_tensor], axis=0)
+    scores = np.concatenate(sas)
+    score_tensor = np.concatenate(sas_tensor, axis=0)
     Fs = {}
-    Fs['SpecId'] = np.concatenate([target_id, decoy1_id, decoy2_id])
+    Fs['SpecId'] = np.concatenate(ids_order)
     Fs[which_sim] = scores
 
     table_data, frag_msms = dataset_manager.index_dataset_by_specid(Fs['SpecId'])
@@ -209,7 +184,7 @@ def generate_prosit_feature_set(
 
     def join_unused_feature():
         unused_name = []
-        unwanted_name = ['matched_ions', 'matched_inten', '_numeric_id']
+        unwanted_name = ['peak_ions', 'peak_inten', '_numeric_id']
         for key in table_data.keys():
             if key not in Fs and key not in unwanted_name:
                 Fs[key] = np.array(table_data[key])

@@ -7,7 +7,7 @@ try:
     from rich.logging import RichHandler
 
     logging.basicConfig(
-        format='%(name)8s > %(message)s', datefmt='%H:%M:%S', handlers=[RichHandler()]
+        format='%(message)s', datefmt='%H:%M:%S', handlers=[RichHandler()]
     )
 except:
     logging.basicConfig(
@@ -112,3 +112,10 @@ class timer:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         timer.NAMED_TAPE[self.named] += timer.time() - self.start
+
+
+def download_file(url, local_path):
+    from urllib import request
+
+    result = request.urlretrieve(url, local_path)
+    return result

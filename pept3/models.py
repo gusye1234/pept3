@@ -204,16 +204,19 @@ if not os.path.exists(ROOT_DIR):
 _Model_Weights_Factories = {
     'prosit': os.path.join(ROOT_DIR, 'best_frag_l1_PrositFrag-1024.pth'),
     'pdeep': os.path.join(ROOT_DIR, 'best_frag_l1_pDeep2-1024.pth'),
+    'prosit20HCD': os.path.join(ROOT_DIR, 'best_hcd_frag_PrositFrag-512.pth'),
 }
 
 _Model_Weights_Url_Factories = {
     'prosit': 'https://github.com/gusye1234/pept3/raw/main/assets/best_frag_l1_PrositFrag-1024.pth',
     'pdeep': 'https://github.com/gusye1234/pept3/raw/main/assets/best_frag_l1_pDeep2-1024.pth',
+    'prosit20HCD': 'https://github.com/gusye1234/pept3/raw/main/assets/best_hcd_frag_PrositFrag-512.pth',
 }
 
 _Model_Weights_md5_Factories = {
     'prosit': 'ec4bc8a7761c38f8732f5f53c3ec40ff',
     'pdeep': 'ae4deb4efbc963c57bd1420ba5df109e',
+    'prosit20HCD': 'adbf98dd785cddbf0b5d381441cc9c5a',
 }
 
 

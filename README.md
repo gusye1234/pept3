@@ -10,15 +10,20 @@
   </p>
 </div>
 
-
-
-
 ## Get Started
 
 ```shell
 pip install pept3
 ```
 To get to know `pept3`, follow the next section to run a demo data.
+
+PepT3 now supports three different baseline models:
+
+* pDeep2, pre-trained by us on the HCD2019 dataset (mentioned in our paper)
+* Prosit
+* Prosit2020 HCD version
+
+*Disclaimer: the baseline models here are not the offical weights on their original papers*
 
 ## Set up locally
 
@@ -32,7 +37,6 @@ git lfs pull
 # install pept3 to python environment
 pip install -e .
 
-# run pept3 like an installed command
 pept3 ./examples/demo_data/demo_input.tab --spmodel=prosit --similarity=SA --output_tab=./examples/demo_data/demo_out.tab --need_tensor --output_tensor=./examples/demo_data/tensor.hdf5
 ```
 
@@ -53,6 +57,8 @@ python pept3_demo.py
 ```
 
 You should get the identical result. The script `pept3_demo.py` will demonstrate the process of how `PepT3` working inside python.
+
+Use command `pept3 -h` to see all the avaliable options.
 
 ## Input Format
 

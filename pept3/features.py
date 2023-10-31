@@ -38,7 +38,7 @@ def generate_prosit_feature_set(
         sas_tensor = []
         ids_order = []
         for now_i, (model, ids) in enumerate(zip(models, id2selects)):
-            logger.info(f'Infer subset [{now_i+1}/{len(models)}]')
+            logger.info(f'Infer subset [{now_i+1}/{len(models)}]: {len(ids)} PSMs')
             subset_loader = DataLoader(
                 dataset_manager.index_data_by_specid(ids),
                 batch_size=batch_size,
